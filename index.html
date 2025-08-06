@@ -491,157 +491,161 @@
             background: #f59e0b;
         }
 
-        /* Premium Alert Toast Styles */
-        .alert-toast {
+        /* Premium Alert Banner Styles (ChatGPT-like) */
+        .alert-banner {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            border: 1px solid #374151;
-            border-left: 4px solid #ef4444;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 400px;
-            min-width: 320px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-top: 3px solid #ef4444;
+            padding: 16px 20px;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
             z-index: 2000;
-            transform: translateX(450px);
+            transform: translateY(100%);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
         }
 
-        .alert-toast.show {
-            transform: translateX(0);
+        .alert-banner.show {
+            transform: translateY(0);
         }
 
-        .alert-toast.success {
-            border-left-color: #10b981;
+        .alert-banner.success {
+            border-top-color: #10b981;
         }
 
-        .alert-toast.warning {
-            border-left-color: #f59e0b;
+        .alert-banner.warning {
+            border-top-color: #f59e0b;
         }
 
-        .alert-header {
+        .alert-banner-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
+            align-items: center;
+            gap: 16px;
         }
 
-        .alert-icon {
-            width: 24px;
-            height: 24px;
+        .alert-banner-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             flex-shrink: 0;
-            margin-top: 2px;
         }
 
-        .alert-icon.error {
+        .alert-banner-icon.error {
             background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
         }
 
-        .alert-icon.success {
+        .alert-banner-icon.success {
             background: rgba(16, 185, 129, 0.2);
             color: #10b981;
         }
 
-        .alert-icon.warning {
+        .alert-banner-icon.warning {
             background: rgba(245, 158, 11, 0.2);
             color: #f59e0b;
         }
 
-        .alert-content {
+        .alert-banner-text {
             flex: 1;
         }
 
-        .alert-title {
+        .alert-banner-title {
             font-size: 16px;
             font-weight: 600;
             color: #e5e7eb;
             margin-bottom: 4px;
         }
 
-        .alert-message {
+        .alert-banner-message {
             font-size: 14px;
             color: #9ca3af;
             line-height: 1.4;
         }
 
-        .alert-close {
-            background: none;
-            border: none;
-            color: #6b7280;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            margin-left: 8px;
-            transition: color 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .alert-close:hover {
-            color: #9ca3af;
-        }
-
-        .alert-actions {
+        .alert-banner-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #374151;
+            gap: 12px;
+            align-items: center;
         }
 
-        .alert-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
+        .alert-banner-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             border: none;
+            white-space: nowrap;
         }
 
-        .alert-btn-primary {
+        .alert-banner-btn.primary {
             background: linear-gradient(45deg, #f59e0b, #ec4899);
             color: white;
         }
 
-        .alert-btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        .alert-banner-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
         }
 
-        .alert-btn-secondary {
+        .alert-banner-btn.secondary {
             background: transparent;
             color: #9ca3af;
             border: 1px solid #4b5563;
         }
 
-        .alert-btn-secondary:hover {
+        .alert-banner-btn.secondary:hover {
             color: #d1d5db;
             border-color: #6b7280;
+            background: rgba(75, 85, 99, 0.1);
         }
 
-        /* Mobile responsiveness for toast */
-        @media (max-width: 640px) {
-            .alert-toast {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: none;
-                min-width: auto;
-                transform: translateY(-100px);
+        .alert-banner-close {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px;
+            transition: color 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .alert-banner-close:hover {
+            color: #9ca3af;
+        }
+
+        /* Mobile responsiveness for banner */
+        @media (max-width: 768px) {
+            .alert-banner {
+                padding: 16px;
             }
 
-            .alert-toast.show {
-                transform: translateY(0);
+            .alert-banner-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .alert-banner-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .alert-banner-btn {
+                flex: 1;
+                text-align: center;
+                min-width: 120px;
             }
         }
 
@@ -822,19 +826,31 @@
             </div>
         </div>
 
-        <!-- Premium Alert Toast -->
-        <div id="alertToast" class="alert-toast">
-            <div class="alert-header">
-                <div class="alert-icon" id="alertIcon">!</div>
-                <div class="alert-content">
-                    <div class="alert-title" id="alertTitle">Limit Reached</div>
-                    <div class="alert-message" id="alertMessage">You've reached your daily limit.</div>
+        <!-- Premium Alert Banner (ChatGPT-like) -->
+        <div id="alertBanner" class="alert-banner">
+            <div class="alert-banner-content">
+                <div class="alert-banner-icon" id="bannerIcon">!</div>
+                <div class="alert-banner-text">
+                    <div class="alert-banner-title" id="bannerTitle">Daily Limit Reached</div>
+                    <div class="alert-banner-message" id="bannerMessage">You've hit the free plan limit. You need to upgrade to continue generating content. Your limit resets tomorrow after 12:00 AM.</div>
                 </div>
-                <button class="alert-close" id="alertClose">×</button>
+                <div class="alert-banner-actions">
+                    <button class="alert-banner-btn primary" id="bannerUpgrade">Upgrade Now</button>
+                    <button class="alert-banner-btn secondary" id="bannerNewChat">Try Tomorrow</button>
+                </div>
+                <button class="alert-banner-close" id="bannerClose">×</button>
             </div>
-            <div class="alert-actions" id="alertActions">
-                <button class="alert-btn alert-btn-primary" id="alertUpgrade">Upgrade Now</button>
-                <button class="alert-btn alert-btn-secondary" id="alertDismiss">Maybe Later</button>
+        </div>
+
+        <!-- Premium Alert Toast (kept for success messages) -->
+        <div id="alertToast" class="alert-banner" style="display: none;">
+            <div class="alert-banner-content">
+                <div class="alert-banner-icon" id="alertIcon">!</div>
+                <div class="alert-banner-text">
+                    <div class="alert-banner-title" id="alertTitle">Success</div>
+                    <div class="alert-banner-message" id="alertMessage">Action completed successfully.</div>
+                </div>
+                <button class="alert-banner-close" id="alertClose">×</button>
             </div>
         </div>
     </div>
@@ -922,23 +938,24 @@
             const typeText = type === 'captions' ? 'Caption' : 'Reel Idea';
             const limit = DAILY_LIMITS[type];
             
-            showAlertToast({
+            showAlertBanner({
                 type: 'error',
-                title: 'Daily Limit Reached',
-                message: `You've used all ${limit} free ${typeText} generations for today. Upgrade to Pro for unlimited access!`,
-                showActions: true
+                title: `You've hit the free plan limit for ${typeText}s.`,
+                message: `You need to upgrade to continue generating ${typeText.toLowerCase()}s because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
+                persistent: true
             });
         }
 
-        function showAlertToast(options) {
-            const toast = document.getElementById('alertToast');
-            const icon = document.getElementById('alertIcon');
-            const title = document.getElementById('alertTitle');
-            const message = document.getElementById('alertMessage');
-            const actions = document.getElementById('alertActions');
+        function showAlertBanner(options) {
+            const banner = document.getElementById('alertBanner');
+            const icon = document.getElementById('bannerIcon');
+            const title = document.getElementById('bannerTitle');
+            const message = document.getElementById('bannerMessage');
             
             // Set icon and styling based on type
-            icon.className = `alert-icon ${options.type}`;
+            banner.className = `alert-banner ${options.type}`;
+            icon.className = `alert-banner-icon ${options.type}`;
+            
             switch(options.type) {
                 case 'error':
                     icon.textContent = '!';
@@ -957,32 +974,69 @@
             title.textContent = options.title;
             message.textContent = options.message;
             
-            // Show/hide actions
-            actions.style.display = options.showActions ? 'flex' : 'none';
+            // Show banner
+            banner.classList.add('show');
             
-            // Show toast
-            toast.classList.add('show');
-            
-            // Auto-hide after 8 seconds if no actions
-            if (!options.showActions) {
+            // Don't auto-hide if persistent
+            if (!options.persistent) {
                 setTimeout(() => {
-                    hideAlertToast();
+                    hideAlertBanner();
                 }, 8000);
             }
         }
 
-        function hideAlertToast() {
-            const toast = document.getElementById('alertToast');
-            toast.classList.remove('show');
+        function hideAlertBanner() {
+            const banner = document.getElementById('alertBanner');
+            banner.classList.remove('show');
         }
 
         function showSuccessAlert(message) {
-            showAlertToast({
-                type: 'success',
-                title: 'Success!',
-                message: message,
-                showActions: false
-            });
+            const toast = document.getElementById('alertToast');
+            const icon = document.getElementById('alertIcon');
+            const title = document.getElementById('alertTitle');
+            const messageEl = document.getElementById('alertMessage');
+            
+            // Configure for success
+            toast.className = 'alert-banner success';
+            icon.className = 'alert-banner-icon success';
+            icon.textContent = '✓';
+            title.textContent = 'Success!';
+            messageEl.textContent = message;
+            
+            // Show toast
+            toast.style.display = 'block';
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 400);
+            }, 5000);
+        }
+
+        function checkAndShowLimitBanner() {
+            // Check if user has reached any limits and show persistent banner
+            const captionsReached = hasReachedLimit('captions');
+            const reelsReached = hasReachedLimit('reelIdeas');
+            
+            if (captionsReached && reelsReached) {
+                showAlertBanner({
+                    type: 'error',
+                    title: `You've hit the free plan limit for all features.`,
+                    message: `You need to upgrade to continue generating content because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
+                    persistent: true
+                });
+            } else if (captionsReached || reelsReached) {
+                const limitedFeature = captionsReached ? 'Captions' : 'Reel Ideas';
+                showAlertBanner({
+                    type: 'error',
+                    title: `You've hit the free plan limit for ${limitedFeature}.`,
+                    message: `You need to upgrade to continue generating ${limitedFeature.toLowerCase()} because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
+                    persistent: true
+                });
+            }
         }
 
         function hideUpgradeModal() {
@@ -1040,6 +1094,9 @@
         function initializeUsageLimits() {
             updateButtonState('generateCaptionsBtn', 'captions');
             updateButtonState('generateReelBtn', 'reelIdeas');
+            
+            // Check and show persistent banner if limits reached
+            checkAndShowLimitBanner();
         }
 
         // Tab switching functionality
@@ -1266,12 +1323,23 @@
             window.open('https://dealsynth.blogspot.com/', '_blank');
         });
 
-        // Alert toast event listeners
-        document.getElementById('alertClose').addEventListener('click', hideAlertToast);
-        document.getElementById('alertDismiss').addEventListener('click', hideAlertToast);
-        document.getElementById('alertUpgrade').addEventListener('click', () => {
+        // Alert banner event listeners
+        document.getElementById('bannerClose').addEventListener('click', hideAlertBanner);
+        document.getElementById('bannerNewChat').addEventListener('click', () => {
+            hideAlertBanner();
+            // Could add logic to reset or redirect
+        });
+        document.getElementById('bannerUpgrade').addEventListener('click', () => {
             window.open('https://dealsynth.blogspot.com/', '_blank');
-            hideAlertToast();
+        });
+
+        // Success toast event listeners  
+        document.getElementById('alertClose').addEventListener('click', () => {
+            const toast = document.getElementById('alertToast');
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 400);
         });
 
         // Close modal when clicking outside
