@@ -151,7 +151,7 @@
             transition: all 0.3s ease;
             margin-bottom: 30px;
             position: relative;
-            overflow: visible; /* Changed from hidden to visible to show badges properly */
+            overflow: visible;
         }
 
         .generate-btn:hover {
@@ -183,13 +183,13 @@
             background: #ef4444;
             color: white;
             font-size: 10px;
-            padding: 4px 8px; /* Increased padding for better visibility */
-            border-radius: 12px; /* Made more rounded */
+            padding: 4px 8px;
+            border-radius: 12px;
             font-weight: 600;
             white-space: nowrap;
-            z-index: 10; /* Ensure it appears above other elements */
-            border: 2px solid #111827; /* Add border to separate from background */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
+            z-index: 10;
+            border: 2px solid #111827;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .loading-spinner {
@@ -284,7 +284,6 @@
             border-top: 1px solid #2d3748;
         }
 
-        /* Make DealSynth brand name clickable */
         .brand-link {
             color: #f59e0b;
             text-decoration: none;
@@ -491,7 +490,7 @@
             background: #f59e0b;
         }
 
-        /* Premium Alert Banner Styles (ChatGPT-like) */
+        /* Premium Alert Banner Styles */
         .alert-banner {
             position: fixed;
             bottom: 0;
@@ -664,10 +663,9 @@
             }
 
             .form-input, .form-select {
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
             }
 
-            /* Ensure badges are visible on mobile */
             .limit-badge {
                 right: -4px;
                 top: -4px;
@@ -826,10 +824,10 @@
             </div>
         </div>
 
-        <!-- Premium Alert Banner (ChatGPT-like) -->
+        <!-- Premium Alert Banner -->
         <div id="alertBanner" class="alert-banner">
             <div class="alert-banner-content">
-                <div class="alert-banner-icon" id="bannerIcon">!</div>
+                <div class="alert-banner-icon error" id="bannerIcon">!</div>
                 <div class="alert-banner-text">
                     <div class="alert-banner-title" id="bannerTitle">Daily Limit Reached</div>
                     <div class="alert-banner-message" id="bannerMessage">You've hit the free plan limit. You need to upgrade to continue generating content. Your limit resets tomorrow after 12:00 AM.</div>
@@ -839,18 +837,6 @@
                     <button class="alert-banner-btn secondary" id="bannerNewChat">Try Tomorrow</button>
                 </div>
                 <button class="alert-banner-close" id="bannerClose">×</button>
-            </div>
-        </div>
-
-        <!-- Premium Alert Toast (kept for success messages) -->
-        <div id="alertToast" class="alert-banner" style="display: none;">
-            <div class="alert-banner-content">
-                <div class="alert-banner-icon" id="alertIcon">!</div>
-                <div class="alert-banner-text">
-                    <div class="alert-banner-title" id="alertTitle">Success</div>
-                    <div class="alert-banner-message" id="alertMessage">Action completed successfully.</div>
-                </div>
-                <button class="alert-banner-close" id="alertClose">×</button>
             </div>
         </div>
     </div>
@@ -868,9 +854,7 @@
 
         function getUsageData() {
             try {
-                // Use a fallback storage object when localStorage is not available
                 if (typeof(Storage) === "undefined") {
-                    // Fallback to session-based storage using a global variable
                     if (!window.instaSynthUsage) {
                         window.instaSynthUsage = {
                             date: getTodayKey(),
@@ -884,7 +868,6 @@
                 const data = JSON.parse(localStorage.getItem('instasynthUsage') || '{}');
                 const today = getTodayKey();
                 
-                // Reset if it's a new day
                 if (data.date !== today) {
                     return {
                         date: today,
@@ -894,7 +877,6 @@
                 }
                 return data;
             } catch (e) {
-                // Fallback if localStorage fails
                 return {
                     date: getTodayKey(),
                     captions: 0,
@@ -906,14 +888,12 @@
         function saveUsageData(data) {
             try {
                 if (typeof(Storage) === "undefined") {
-                    // Fallback to session storage
                     window.instaSynthUsage = data;
                     return;
                 }
                 localStorage.setItem('instasynthUsage', JSON.stringify(data));
             } catch (e) {
                 console.warn('Could not save usage data to localStorage');
-                // Use fallback storage
                 window.instaSynthUsage = data;
             }
         }
@@ -934,11 +914,6 @@
             return getRemainingUses(type) === 0;
         }
 
-        function showLimitReachedAlert(type) {
-            // Show banner immediately when limit is hit
-            checkAndShowLimitBanner();
-        }
-
         function showAlertBanner(options) {
             const banner = document.getElementById('alertBanner');
             const icon = document.getElementById('bannerIcon');
@@ -947,13 +922,10 @@
             const switchButton = document.getElementById('bannerNewChat');
             
             // Set icon and styling based on type
-            banner.className = `alert-banner ${options.type}`;
-            icon.className = `alert-banner-icon ${options.type}`;
+            banner.className = `alert-banner ${options.type || 'error'}`;
+            icon.className = `alert-banner-icon ${options.type || 'error'}`;
             
             switch(options.type) {
-                case 'error':
-                    icon.textContent = '!';
-                    break;
                 case 'success':
                     icon.textContent = '✓';
                     break;
@@ -961,21 +933,17 @@
                     icon.textContent = '⚠';
                     break;
                 default:
-                    icon.textContent = 'i';
+                    icon.textContent = '!';
             }
             
-            // Set content
             title.textContent = options.title;
             message.textContent = options.message;
             
-            // Update button text and action
             switchButton.textContent = options.buttonText || 'Try Tomorrow';
             switchButton.setAttribute('data-switch-to', options.switchTo || '');
             
-            // Show banner
             banner.classList.add('show');
             
-            // Don't auto-hide if persistent
             if (!options.persistent) {
                 setTimeout(() => {
                     hideAlertBanner();
@@ -988,32 +956,6 @@
             banner.classList.remove('show');
         }
 
-        function showSuccessAlert(message) {
-            const toast = document.getElementById('alertToast');
-            const icon = document.getElementById('alertIcon');
-            const title = document.getElementById('alertTitle');
-            const messageEl = document.getElementById('alertMessage');
-            
-            // Configure for success
-            toast.className = 'alert-banner success';
-            icon.className = 'alert-banner-icon success';
-            icon.textContent = '✓';
-            title.textContent = 'Success!';
-            messageEl.textContent = message;
-            
-            // Show toast
-            toast.style.display = 'block';
-            setTimeout(() => toast.classList.add('show'), 100);
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 400);
-            }, 5000);
-        }
-
         function checkAndShowLimitBanner() {
             const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
             const currentFeature = activeTab === 'captions' ? 'captions' : 'reelIdeas';
@@ -1023,7 +965,6 @@
             const otherReached = hasReachedLimit(otherFeature);
             
             if (currentReached && otherReached) {
-                // Both features hit limit
                 showAlertBanner({
                     type: 'error',
                     title: `You've hit the free plan limit for all features.`,
@@ -1032,7 +973,6 @@
                     persistent: true
                 });
             } else if (currentReached && !otherReached) {
-                // Current feature hit limit, but other available
                 const currentFeatureName = currentFeature === 'captions' ? 'Captions' : 'Reel Ideas';
                 const otherFeatureName = otherFeature === 'captions' ? 'Captions' : 'Reel Ideas';
                 const remaining = getRemainingUses(otherFeature);
@@ -1046,15 +986,8 @@
                     persistent: true
                 });
             } else {
-                // No limits reached for current tab, hide banner
                 hideAlertBanner();
             }
-        }
-
-        function hideUpgradeModal() {
-            const modal = document.getElementById('upgradeModal');
-            modal.classList.remove('show');
-            document.body.style.overflow = 'auto';
         }
 
         function updateUsageIndicator(buttonId, type) {
@@ -1077,14 +1010,12 @@
             const button = document.getElementById(buttonId);
             const remaining = getRemainingUses(type);
             
-            // Update usage indicator
             updateUsageIndicator(buttonId, type);
             
             if (hasReachedLimit(type)) {
                 button.disabled = true;
                 button.classList.add('limit-reached');
                 
-                // Add limit badge if not exists
                 if (!button.querySelector('.limit-badge')) {
                     const badge = document.createElement('span');
                     badge.className = 'limit-badge';
@@ -1095,7 +1026,6 @@
                 button.disabled = false;
                 button.classList.remove('limit-reached');
                 
-                // Remove limit badge if exists
                 const badge = button.querySelector('.limit-badge');
                 if (badge) {
                     badge.remove();
@@ -1106,11 +1036,6 @@
         function initializeUsageLimits() {
             updateButtonState('generateCaptionsBtn', 'captions');
             updateButtonState('generateReelBtn', 'reelIdeas');
-            
-            // Only check banner on initial load, not on every tab switch
-            setTimeout(() => {
-                checkAndShowLimitBanner();
-            }, 100);
         }
 
         // Tab switching functionality
@@ -1118,22 +1043,17 @@
             tab.addEventListener('click', () => {
                 const tabId = tab.getAttribute('data-tab');
                 
-                // Remove active class from all tabs and content
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                 
-                // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
                 document.getElementById(tabId).classList.add('active');
                 
-                // Hide any visible output sections
                 document.querySelectorAll('.output-section').forEach(output => output.classList.remove('show'));
                 
-                // Update button states when switching tabs
                 updateButtonState('generateCaptionsBtn', 'captions');
                 updateButtonState('generateReelBtn', 'reelIdeas');
                 
-                // Check and update banner for current tab
                 checkAndShowLimitBanner();
             });
         });
@@ -1182,16 +1102,15 @@
             };
             
             const toneList = reelIdeas[tone] || reelIdeas.motivational;
-            return toneList[Math.floor(Math.random() * toneList.length)];
+            return toneList[Math.floor(Math.random() * reelIdeas.length)];
         }
 
         // Form submissions
         document.getElementById('captionsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Check usage limit first
             if (hasReachedLimit('captions')) {
-                showLimitReachedAlert('captions');
+                checkAndShowLimitBanner();
                 return;
             }
             
@@ -1209,42 +1128,33 @@
             const output = document.getElementById('captionsOutput');
             const content = document.getElementById('captionsContent');
             
-            // Show loading state
             btn.disabled = true;
             spinner.style.display = 'inline-block';
             output.classList.remove('show');
             
-            // Simulate API delay
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Generate and show content
             const caption = generateCaptions(niche, tone, goal);
             content.textContent = caption;
             output.classList.add('show');
             
-            // Increment usage count
             incrementUsageCount('captions');
             
-            // Show success message
-            const remaining = getRemainingUses('captions');
-            if (remaining > 0) {
-                showSuccessAlert(`Caption generated! You have ${remaining} caption${remaining === 1 ? '' : 's'} left today.`);
-            } else {
-                showSuccessAlert('Caption generated! This was your last free generation for today.');
-            }
-            
-            // Reset button state and update for new usage count
             btn.disabled = false;
             spinner.style.display = 'none';
             updateButtonState('generateCaptionsBtn', 'captions');
+            
+            // Check if limit reached AFTER generation
+            if (hasReachedLimit('captions')) {
+                checkAndShowLimitBanner();
+            }
         });
 
         document.getElementById('reelIdeasForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Check usage limit first
             if (hasReachedLimit('reelIdeas')) {
-                showLimitReachedAlert('reelIdeas');
+                checkAndShowLimitBanner();
                 return;
             }
             
@@ -1262,34 +1172,26 @@
             const output = document.getElementById('reelOutput');
             const content = document.getElementById('reelContent');
             
-            // Show loading state
             btn.disabled = true;
             spinner.style.display = 'inline-block';
             output.classList.remove('show');
             
-            // Simulate API delay
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Generate and show content
             const reelIdea = generateReelIdeas(niche, tone, goal);
             content.textContent = reelIdea;
             output.classList.add('show');
             
-            // Increment usage count
             incrementUsageCount('reelIdeas');
             
-            // Show success message
-            const remaining = getRemainingUses('reelIdeas');
-            if (remaining > 0) {
-                showSuccessAlert(`Reel ideas generated! You have ${remaining} reel idea${remaining === 1 ? '' : 's'} left today.`);
-            } else {
-                showSuccessAlert('Reel ideas generated! This was your last free generation for today.');
-            }
-            
-            // Reset button state and update for new usage count
             btn.disabled = false;
             spinner.style.display = 'none';
             updateButtonState('generateReelBtn', 'reelIdeas');
+            
+            // Check if limit reached AFTER generation
+            if (hasReachedLimit('reelIdeas')) {
+                checkAndShowLimitBanner();
+            }
         });
 
         // Copy to clipboard functionality
@@ -1308,8 +1210,6 @@
                         btn.classList.remove('copied');
                     }, 2000);
                 } catch (err) {
-                    console.error('Failed to copy: ', err);
-                    // Fallback for older browsers
                     const textArea = document.createElement('textarea');
                     textArea.value = content;
                     document.body.appendChild(textArea);
@@ -1334,52 +1234,48 @@
         setupCopyButton('copyReelBtn', 'reelContent');
 
         // Modal event listeners
-        document.getElementById('closeUpgrade').addEventListener('click', hideUpgradeModal);
-        document.getElementById('upgradeLater').addEventListener('click', hideUpgradeModal);
+        document.getElementById('closeUpgrade').addEventListener('click', () => {
+            document.getElementById('upgradeModal').classList.remove('show');
+        });
+        
+        document.getElementById('upgradeLater').addEventListener('click', () => {
+            document.getElementById('upgradeModal').classList.remove('show');
+        });
+        
         document.getElementById('upgradeCta').addEventListener('click', () => {
-            // Replace with your actual upgrade URL
             window.open('https://dealsynth.blogspot.com/', '_blank');
         });
 
         // Alert banner event listeners
         document.getElementById('bannerClose').addEventListener('click', hideAlertBanner);
+        
         document.getElementById('bannerNewChat').addEventListener('click', (e) => {
             const switchTo = e.target.getAttribute('data-switch-to');
             if (switchTo) {
-                // Switch to the tab that still has chances
                 const targetTab = document.querySelector(`[data-tab="${switchTo}"]`);
                 if (targetTab) {
-                    targetTab.click(); // This will trigger the tab switch and update the banner
+                    targetTab.click();
                 }
             } else {
-                // If no switch target, just hide banner (Try Tomorrow case)
                 hideAlertBanner();
             }
         });
+        
         document.getElementById('bannerUpgrade').addEventListener('click', () => {
             window.open('https://dealsynth.blogspot.com/', '_blank');
-        });
-
-        // Success toast event listeners  
-        document.getElementById('alertClose').addEventListener('click', () => {
-            const toast = document.getElementById('alertToast');
-            toast.classList.remove('show');
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 400);
         });
 
         // Close modal when clicking outside
         document.getElementById('upgradeModal').addEventListener('click', (e) => {
             if (e.target.id === 'upgradeModal') {
-                hideUpgradeModal();
+                document.getElementById('upgradeModal').classList.remove('show');
             }
         });
 
         // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                hideUpgradeModal();
+                document.getElementById('upgradeModal').classList.remove('show');
             }
         });
 
