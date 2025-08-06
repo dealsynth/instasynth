@@ -376,6 +376,89 @@
     </div>
 
     <script>
+        // Usage Limit System
+        const DAILY_LIMITS = {
+            captions: 3,
+            reelIdeas: 2
+        };
+
+        function getTodayKey() {
+            return new Date().toDateString();
+        }
+
+        function getUsageData() {
+            try {
+                const data = JSON.parse(localStorage.getItem('instasynthUsage') || '{}');
+                const today = getTodayKey();
+                
+                // Reset if it's a new day
+                if (data.date !== today) {
+                    return {
+                        date: today,
+                        captions: 0,
+                        reelIdeas: 0
+                    };
+                }
+                return data;
+            } catch (e) {
+                // Fallback if localStorage fails
+                return {
+                    date: getTodayKey(),
+                    captions: 0,
+                    reelIdeas: 0
+                };
+            }
+        }
+
+        function saveUsageData(data) {
+            try {
+                localStorage.setItem('instasynthUsage', JSON.stringify(data));
+            } catch (e) {
+                console.warn('Could not save usage data to localStorage');
+            }
+        }
+
+        function incrementUsageCount(type) {
+            const data = getUsageData();
+            data[type]++;
+            saveUsageData(data);
+            return data[type];
+        }
+
+        function getRemainingUses(type) {
+            const data = getUsageData();
+            return Math.max(0, DAILY_LIMITS[type] - data[type]);
+        }
+
+        function hasReachedLimit(type) {
+            return getRemainingUses(type) === 0;
+        }
+
+        function showLimitReachedAlert(type) {
+            const typeText = type === 'captions' ? 'Caption' : 'Reel Idea';
+            alert(`You've reached today's free limit for ${typeText} generation. Upgrade to Pro for unlimited access.`);
+        }
+
+        function updateButtonState(buttonId, type) {
+            const button = document.getElementById(buttonId);
+            const remaining = getRemainingUses(type);
+            
+            if (hasReachedLimit(type)) {
+                button.disabled = true;
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+            } else {
+                button.disabled = false;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+            }
+        }
+
+        function initializeUsageLimits() {
+            updateButtonState('generateCaptionsBtn', 'captions');
+            updateButtonState('generateReelBtn', 'reelIdeas');
+        }
+
         // Tab switching functionality
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -391,6 +474,9 @@
                 
                 // Hide any visible output sections
                 document.querySelectorAll('.output-section').forEach(output => output.classList.remove('show'));
+                
+                // Update button states when switching tabs
+                initializeUsageLimits();
             });
         });
 
@@ -445,6 +531,12 @@
         document.getElementById('captionsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Check usage limit first
+            if (hasReachedLimit('captions')) {
+                showLimitReachedAlert('captions');
+                return;
+            }
+            
             const niche = document.getElementById('captionNiche').value.trim();
             const tone = document.getElementById('captionTone').value;
             const goal = document.getElementById('captionGoal').value.trim();
@@ -472,13 +564,23 @@
             content.textContent = caption;
             output.classList.add('show');
             
-            // Reset button state
+            // Increment usage count
+            incrementUsageCount('captions');
+            
+            // Reset button state and update for new usage count
             btn.disabled = false;
             spinner.style.display = 'none';
+            updateButtonState('generateCaptionsBtn', 'captions');
         });
 
         document.getElementById('reelIdeasForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Check usage limit first
+            if (hasReachedLimit('reelIdeas')) {
+                showLimitReachedAlert('reelIdeas');
+                return;
+            }
             
             const niche = document.getElementById('reelNiche').value.trim();
             const tone = document.getElementById('reelTone').value;
@@ -507,9 +609,13 @@
             content.textContent = reelIdea;
             output.classList.add('show');
             
-            // Reset button state
+            // Increment usage count
+            incrementUsageCount('reelIdeas');
+            
+            // Reset button state and update for new usage count
             btn.disabled = false;
             spinner.style.display = 'none';
+            updateButtonState('generateReelBtn', 'reelIdeas');
         });
 
         // Copy to clipboard functionality
