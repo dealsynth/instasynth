@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaSynth | Powered by DealSynth</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/yourlogo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #111827;
+            color: #e5e7eb;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-title {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #374151;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: #e5e7eb;
+        }
+
+        .tab.active {
+            color: #f59e0b;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-section {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #374151;
+            display: none;
+        }
+
+        .output-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .output-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f59e0b;
+        }
+
+        .copy-btn {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: #e5e7eb;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+
+        .copy-btn.copied {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .output-content {
+            color: #e5e7eb;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid #374151;
+        }
+
+        .footer-branding {
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+            padding: 16px 0;
+            margin-top: 20px;
+            border-top: 1px solid #2d3748;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 16px;
+            }
+
+            .logo-title {
+                font-size: 24px;
+            }
+
+            .tab {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .form-input, .form-select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">📸</div>
+                <h1 class="logo-title">InstaSynth</h1>
+            </div>
+            <p class="subtitle">AI Captions & Reel Ideas for Creators</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="captions">Captions</button>
+            <button class="tab" data-tab="reel-ideas">Reel Ideas</button>
+        </div>
+
+        <div id="captions" class="tab-content active">
+            <form id="captionsForm">
+                <div class="form-group">
+                    <label for="captionNiche" class="form-label">Niche or Industry</label>
+                    <input type="text" id="captionNiche" class="form-input" placeholder="e.g., fitness, food, travel, fashion">
+                </div>
+
+                <div class="form-group">
+                    <label for="captionTone" class="form-label">Tone / Style</label>
+                    <select id="captionTone" class="form-select">
+                        <option value="">Select a tone</option>
+                        <option value="funny">Funny</option>
+                        <option value="luxury">Luxury</option>
+                        <option value="motivational">Motivational</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="captionGoal" class="form-label">Goal</label>
+                    <input type="text" id="captionGoal" class="form-input" placeholder="e.g., increase engagement, promote product, inspire audience">
+                </div>
+
+                <button type="submit" class="generate-btn" id="generateCaptionsBtn">
+                    <span class="loading-spinner" id="captionsSpinner"></span>
+                    Generate Caption
+                </button>
+            </form>
+
+            <div id="captionsOutput" class="output-section">
+                <div class="output-header">
+                    <h3 class="output-title">Generated Caption</h3>
+                    <button class="copy-btn" id="copyCaptionBtn">Copy</button>
+                </div>
+                <div class="output-content" id="captionsContent"></div>
+            </div>
+        </div>
+
+        <div id="reel-ideas" class="tab-content">
+            <form id="reelIdeasForm">
+                <div class="form-group">
+                    <label for="reelNiche" class="form-label">Niche or Industry</label>
+                    <input type="text" id="reelNiche" class="form-input" placeholder="e.g., fitness, food, travel, fashion">
+                </div>
+
+                <div class="form-group">
+                    <label for="reelTone" class="form-label">Tone / Style</label>
+                    <select id="reelTone" class="form-select">
+                        <option value="">Select a tone</option>
+                        <option value="funny">Funny</option>
+                        <option value="luxury">Luxury</option>
+                        <option value="motivational">Motivational</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="reelGoal" class="form-label">Goal</label>
+                    <input type="text" id="reelGoal" class="form-input" placeholder="e.g., increase engagement, promote product, inspire audience">
+                </div>
+
+                <button type="submit" class="generate-btn" id="generateReelBtn">
+                    <span class="loading-spinner" id="reelSpinner"></span>
+                    Generate Reel Ideas
+                </button>
+            </form>
+
+            <div id="reelOutput" class="output-section">
+                <div class="output-header">
+                    <h3 class="output-title">Generated Reel Ideas</h3>
+                    <button class="copy-btn" id="copyReelBtn">Copy</button>
+                </div>
+                <div class="output-content" id="reelContent"></div>
+            </div>
+        </div>
+
+        <footer class="footer-note">
+            Use of generated content for personal or commercial use
+        </footer>
+
+        <div class="footer-branding">
+            🔹 Powered by DealSynth — Elite AI Tools for Digital Hustlers • © 2025
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Hide any visible output sections
+                document.querySelectorAll('.output-section').forEach(output => output.classList.remove('show'));
+            });
+        });
+
+        // Mock AI generation functions
+        function generateCaptions(niche, tone, goal) {
+            const captions = {
+                funny: [
+                    `POV: You're trying to ${goal.toLowerCase()} but your ${niche} game is too strong 😂\n\n#${niche} #funny #relatable`,
+                    `Me: I'll just post one ${niche} pic\nAlso me: *posts entire photo dump*\n\nWho else is guilty? 🙋‍♀️\n\n#${niche}life #guilty #authentic`,
+                    `When someone asks about my ${niche} obsession:\n"It's not a phase, mom!" 💁‍♀️\n\nTag someone who gets it!\n\n#${niche}addict #notaphase #lifestyle`
+                ],
+                luxury: [
+                    `Elevated ${niche} experiences that speak to the soul ✨\n\nCurating moments of pure sophistication to ${goal.toLowerCase()}.\n\n#luxury${niche} #sophisticated #exclusive`,
+                    `Where ${niche} meets artistry. Every detail crafted with intention.\n\nExperience the difference that ${goal.toLowerCase()} brings.\n\n#premium #craftsmanship #luxury`,
+                    `Indulge in the finest ${niche} experience. Because you deserve nothing less than extraordinary.\n\n#luxurylifestyle #premium${niche} #exclusive`
+                ],
+                motivational: [
+                    `Your ${niche} journey is unique, and that's your superpower! 💪\n\nEvery step forward, no matter how small, is progress toward your goal to ${goal.toLowerCase()}.\n\n#motivation #${niche}journey #progress`,
+                    `Champions aren't made overnight, but they're made every day through consistent ${niche} dedication.\n\nWhat will you do today to ${goal.toLowerCase()}?\n\n#consistency #motivation #${niche}`,
+                    `The only person you need to be better than is who you were yesterday in your ${niche} journey.\n\nKeep pushing to ${goal.toLowerCase()}! 🚀\n\n#growth #motivation #selflove`
+                ]
+            };
+            
+            const toneList = captions[tone] || captions.motivational;
+            return toneList[Math.floor(Math.random() * toneList.length)];
+        }
+
+        function generateReelIdeas(niche, tone, goal) {
+            const reelIdeas = {
+                funny: [
+                    `🎬 REEL IDEA: "${niche.toUpperCase()} EXPECTATIONS VS REALITY"\n\nScene 1: What you think ${niche} looks like\nScene 2: What it actually looks like\nScene 3: You doing it anyway because you love it\n\nGoal: ${goal}\nMusic: Trending comedy audio\nHashtags: #${niche} #expectationsvsreality #relatable`,
+                    `🎬 REEL IDEA: "THINGS NOBODY TELLS YOU ABOUT ${niche.toUpperCase()}"\n\nQuick cuts showing:\n• The hidden struggles\n• Funny moments\n• Real behind-the-scenes\n• Why you still love it\n\nGoal: ${goal}\nMusic: Popular trending sound\nHashtags: #${niche}truths #reality #funny`,
+                    `🎬 REEL IDEA: "POV: YOU'RE ADDICTED TO ${niche.toUpperCase()}"\n\nShow relatable scenarios:\n• Checking ${niche} content at 3am\n• Buying more ${niche} stuff\n• Friends rolling their eyes\n• No regrets\n\nGoal: ${goal}\nMusic: Trending audio\nHashtags: #${niche}addict #pov #relatable`
+                ],
+                luxury: [
+                    `🎬 REEL IDEA: "THE ART OF ${niche.toUpperCase()} EXCELLENCE"\n\nCinematic shots showing:\n• Premium materials/ingredients\n• Meticulous attention to detail\n• The craftsmanship process\n• Final luxurious result\n\nGoal: ${goal}\nMusic: Elegant classical/modern\nHashtags: #luxury${niche} #craftsmanship #premium`,
+                    `🎬 REEL IDEA: "ELEVATING YOUR ${niche.toUpperCase()} EXPERIENCE"\n\nSlow-motion luxury shots:\n• Premium setup/preparation\n• Sophisticated techniques\n• Elegant presentation\n• Pure indulgence\n\nGoal: ${goal}\nMusic: Sophisticated instrumental\nHashtags: #elevated #luxury #sophisticated`,
+                    `🎬 REEL IDEA: "BEHIND THE SCENES: LUXURY ${niche.toUpperCase()}"\n\nExclusive glimpses of:\n• Premium processes\n• High-end materials\n• Expert craftsmanship\n• Attention to detail\n\nGoal: ${goal}\nMusic: Upscale ambient\nHashtags: #behindthescenes #luxury #exclusive`
+                ],
+                motivational: [
+                    `🎬 REEL IDEA: "YOUR ${niche.toUpperCase()} TRANSFORMATION JOURNEY"\n\nShow progression:\n• Day 1 struggles\n• Small wins along the way\n• Consistent effort\n• Amazing results\n\nGoal: ${goal}\nMusic: Inspiring/uplifting beat\nHashtags: #transformation #${niche}journey #motivation`,
+                    `🎬 REEL IDEA: "5 ${niche.toUpperCase()} HABITS THAT CHANGED MY LIFE"\n\nQuick tips format:\n1. Morning routine habit\n2. Consistency practice\n3. Mindset shift\n4. Small daily action\n5. Celebration ritual\n\nGoal: ${goal}\nMusic: Motivational audio\nHashtags: #${niche}habits #motivation #lifehacks`,
+                    `🎬 REEL IDEA: "FROM DOUBT TO CONFIDENCE IN ${niche.toUpperCase()}"\n\nEmotional story arc:\n• Initial fears/doubts\n• Taking the first step\n• Overcoming obstacles\n• Celebrating progress\n\nGoal: ${goal}\nMusic: Inspirational build-up\nHashtags: #confidence #${niche} #motivation`
+                ]
+            };
+            
+            const toneList = reelIdeas[tone] || reelIdeas.motivational;
+            return toneList[Math.floor(Math.random() * toneList.length)];
+        }
+
+        // Form submissions
+        document.getElementById('captionsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const niche = document.getElementById('captionNiche').value.trim();
+            const tone = document.getElementById('captionTone').value;
+            const goal = document.getElementById('captionGoal').value.trim();
+            
+            if (!niche || !tone || !goal) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const btn = document.getElementById('generateCaptionsBtn');
+            const spinner = document.getElementById('captionsSpinner');
+            const output = document.getElementById('captionsOutput');
+            const content = document.getElementById('captionsContent');
+            
+            // Show loading state
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            output.classList.remove('show');
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Generate and show content
+            const caption = generateCaptions(niche, tone, goal);
+            content.textContent = caption;
+            output.classList.add('show');
+            
+            // Reset button state
+            btn.disabled = false;
+            spinner.style.display = 'none';
+        });
+
+        document.getElementById('reelIdeasForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const niche = document.getElementById('reelNiche').value.trim();
+            const tone = document.getElementById('reelTone').value;
+            const goal = document.getElementById('reelGoal').value.trim();
+            
+            if (!niche || !tone || !goal) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const btn = document.getElementById('generateReelBtn');
+            const spinner = document.getElementById('reelSpinner');
+            const output = document.getElementById('reelOutput');
+            const content = document.getElementById('reelContent');
+            
+            // Show loading state
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            output.classList.remove('show');
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Generate and show content
+            const reelIdea = generateReelIdeas(niche, tone, goal);
+            content.textContent = reelIdea;
+            output.classList.add('show');
+            
+            // Reset button state
+            btn.disabled = false;
+            spinner.style.display = 'none';
+        });
+
+        // Copy to clipboard functionality
+        function setupCopyButton(buttonId, contentId) {
+            document.getElementById(buttonId).addEventListener('click', async () => {
+                const content = document.getElementById(contentId).textContent;
+                const btn = document.getElementById(buttonId);
+                
+                try {
+                    await navigator.clipboard.writeText(content);
+                    btn.textContent = 'Copied!';
+                    btn.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        btn.textContent = 'Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = content;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        btn.textContent = 'Copied!';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.textContent = 'Copy';
+                            btn.classList.remove('copied');
+                        }, 2000);
+                    } catch (fallbackErr) {
+                        console.error('Fallback copy failed: ', fallbackErr);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            });
+        }
+
+        setupCopyButton('copyCaptionBtn', 'captionsContent');
+        setupCopyButton('copyReelBtn', 'reelContent');
+    </script>
+</body>
+</html>
