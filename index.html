@@ -935,15 +935,8 @@
         }
 
         function showLimitReachedAlert(type) {
-            const typeText = type === 'captions' ? 'Caption' : 'Reel Idea';
-            const limit = DAILY_LIMITS[type];
-            
-            showAlertBanner({
-                type: 'error',
-                title: `You've hit the free plan limit for ${typeText}s.`,
-                message: `You need to upgrade to continue generating ${typeText.toLowerCase()}s because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
-                persistent: true
-            });
+            // Show banner immediately when limit is hit
+            checkAndShowLimitBanner();
         }
 
         function showAlertBanner(options) {
@@ -951,6 +944,7 @@
             const icon = document.getElementById('bannerIcon');
             const title = document.getElementById('bannerTitle');
             const message = document.getElementById('bannerMessage');
+            const switchButton = document.getElementById('bannerNewChat');
             
             // Set icon and styling based on type
             banner.className = `alert-banner ${options.type}`;
@@ -973,6 +967,10 @@
             // Set content
             title.textContent = options.title;
             message.textContent = options.message;
+            
+            // Update button text and action
+            switchButton.textContent = options.buttonText || 'Try Tomorrow';
+            switchButton.setAttribute('data-switch-to', options.switchTo || '');
             
             // Show banner
             banner.classList.add('show');
@@ -1017,25 +1015,39 @@
         }
 
         function checkAndShowLimitBanner() {
-            // Check if user has reached any limits and show persistent banner
-            const captionsReached = hasReachedLimit('captions');
-            const reelsReached = hasReachedLimit('reelIdeas');
+            const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
+            const currentFeature = activeTab === 'captions' ? 'captions' : 'reelIdeas';
+            const otherFeature = currentFeature === 'captions' ? 'reelIdeas' : 'captions';
             
-            if (captionsReached && reelsReached) {
+            const currentReached = hasReachedLimit(currentFeature);
+            const otherReached = hasReachedLimit(otherFeature);
+            
+            if (currentReached && otherReached) {
+                // Both features hit limit
                 showAlertBanner({
                     type: 'error',
                     title: `You've hit the free plan limit for all features.`,
                     message: `You need to upgrade to continue generating content because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
+                    buttonText: 'Try Tomorrow',
                     persistent: true
                 });
-            } else if (captionsReached || reelsReached) {
-                const limitedFeature = captionsReached ? 'Captions' : 'Reel Ideas';
+            } else if (currentReached && !otherReached) {
+                // Current feature hit limit, but other available
+                const currentFeatureName = currentFeature === 'captions' ? 'Captions' : 'Reel Ideas';
+                const otherFeatureName = otherFeature === 'captions' ? 'Captions' : 'Reel Ideas';
+                const remaining = getRemainingUses(otherFeature);
+                
                 showAlertBanner({
                     type: 'error',
-                    title: `You've hit the free plan limit for ${limitedFeature}.`,
-                    message: `You need to upgrade to continue generating ${limitedFeature.toLowerCase()} because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
+                    title: `You've hit the free plan limit for ${currentFeatureName}.`,
+                    message: `You need to upgrade to continue generating ${currentFeatureName.toLowerCase()} because there's high demand. You still have ${remaining} ${otherFeatureName.toLowerCase()} left today.`,
+                    buttonText: `Try ${otherFeatureName}`,
+                    switchTo: otherFeature === 'captions' ? 'captions' : 'reel-ideas',
                     persistent: true
                 });
+            } else {
+                // No limits reached for current tab, hide banner
+                hideAlertBanner();
             }
         }
 
@@ -1095,8 +1107,10 @@
             updateButtonState('generateCaptionsBtn', 'captions');
             updateButtonState('generateReelBtn', 'reelIdeas');
             
-            // Check and show persistent banner if limits reached
-            checkAndShowLimitBanner();
+            // Only check banner on initial load, not on every tab switch
+            setTimeout(() => {
+                checkAndShowLimitBanner();
+            }, 100);
         }
 
         // Tab switching functionality
@@ -1116,7 +1130,11 @@
                 document.querySelectorAll('.output-section').forEach(output => output.classList.remove('show'));
                 
                 // Update button states when switching tabs
-                initializeUsageLimits();
+                updateButtonState('generateCaptionsBtn', 'captions');
+                updateButtonState('generateReelBtn', 'reelIdeas');
+                
+                // Check and update banner for current tab
+                checkAndShowLimitBanner();
             });
         });
 
@@ -1325,9 +1343,18 @@
 
         // Alert banner event listeners
         document.getElementById('bannerClose').addEventListener('click', hideAlertBanner);
-        document.getElementById('bannerNewChat').addEventListener('click', () => {
-            hideAlertBanner();
-            // Could add logic to reset or redirect
+        document.getElementById('bannerNewChat').addEventListener('click', (e) => {
+            const switchTo = e.target.getAttribute('data-switch-to');
+            if (switchTo) {
+                // Switch to the tab that still has chances
+                const targetTab = document.querySelector(`[data-tab="${switchTo}"]`);
+                if (targetTab) {
+                    targetTab.click(); // This will trigger the tab switch and update the banner
+                }
+            } else {
+                // If no switch target, just hide banner (Try Tomorrow case)
+                hideAlertBanner();
+            }
         });
         document.getElementById('bannerUpgrade').addEventListener('click', () => {
             window.open('https://dealsynth.blogspot.com/', '_blank');
