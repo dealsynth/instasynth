@@ -151,7 +151,7 @@
             transition: all 0.3s ease;
             margin-bottom: 30px;
             position: relative;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to visible to show badges properly */
         }
 
         .generate-btn:hover {
@@ -183,9 +183,13 @@
             background: #ef4444;
             color: white;
             font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 4px 8px; /* Increased padding for better visibility */
+            border-radius: 12px; /* Made more rounded */
             font-weight: 600;
+            white-space: nowrap;
+            z-index: 10; /* Ensure it appears above other elements */
+            border: 2px solid #111827; /* Add border to separate from background */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
         }
 
         .loading-spinner {
@@ -278,6 +282,23 @@
             padding: 16px 0;
             margin-top: 20px;
             border-top: 1px solid #2d3748;
+        }
+
+        /* Make DealSynth brand name clickable */
+        .brand-link {
+            color: #f59e0b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-link:hover {
+            text-decoration: underline;
+            filter: brightness(1.2);
         }
 
         /* Premium Upgrade Modal Styles */
@@ -487,6 +508,14 @@
             .form-input, .form-select {
                 font-size: 16px; /* Prevents zoom on iOS */
             }
+
+            /* Ensure badges are visible on mobile */
+            .limit-badge {
+                right: -4px;
+                top: -4px;
+                font-size: 9px;
+                padding: 3px 6px;
+            }
         }
     </style>
 </head>
@@ -586,7 +615,7 @@
         </footer>
 
         <div class="footer-branding">
-            🔹 Powered by DealSynth — Elite AI Tools for Digital Hustlers • © 2025
+            🔹 Powered by <a href="https://dealsynth.blogspot.com/" target="_blank" class="brand-link">DealSynth</a> — Elite AI Tools for Digital Hustlers • © 2025
         </div>
 
         <!-- Premium Upgrade Modal -->
@@ -653,6 +682,19 @@
 
         function getUsageData() {
             try {
+                // Use a fallback storage object when localStorage is not available
+                if (typeof(Storage) === "undefined") {
+                    // Fallback to session-based storage using a global variable
+                    if (!window.instaSynthUsage) {
+                        window.instaSynthUsage = {
+                            date: getTodayKey(),
+                            captions: 0,
+                            reelIdeas: 0
+                        };
+                    }
+                    return window.instaSynthUsage;
+                }
+                
                 const data = JSON.parse(localStorage.getItem('instasynthUsage') || '{}');
                 const today = getTodayKey();
                 
@@ -677,9 +719,16 @@
 
         function saveUsageData(data) {
             try {
+                if (typeof(Storage) === "undefined") {
+                    // Fallback to session storage
+                    window.instaSynthUsage = data;
+                    return;
+                }
                 localStorage.setItem('instasynthUsage', JSON.stringify(data));
             } catch (e) {
                 console.warn('Could not save usage data to localStorage');
+                // Use fallback storage
+                window.instaSynthUsage = data;
             }
         }
 
@@ -973,7 +1022,7 @@
         document.getElementById('upgradeLater').addEventListener('click', hideUpgradeModal);
         document.getElementById('upgradeCta').addEventListener('click', () => {
             // Replace with your actual upgrade URL
-            window.open('https://dealsynth.com/upgrade', '_blank');
+            window.open('https://dealsynth.blogspot.com/', '_blank');
         });
 
         // Close modal when clicking outside
