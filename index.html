@@ -160,9 +160,32 @@
         }
 
         .generate-btn:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            position: relative;
+        }
+
+        .generate-btn.limit-reached {
+            background: linear-gradient(45deg, #6b7280, #9ca3af);
+            color: #d1d5db;
+        }
+
+        .generate-btn.limit-reached:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .limit-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
         }
 
         .loading-spinner {
@@ -257,6 +280,196 @@
             border-top: 1px solid #2d3748;
         }
 
+        /* Premium Upgrade Modal Styles */
+        .upgrade-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .upgrade-content {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .upgrade-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .upgrade-close:hover {
+            color: #e5e7eb;
+        }
+
+        .upgrade-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .upgrade-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e5e7eb;
+            margin-bottom: 8px;
+        }
+
+        .upgrade-subtitle {
+            color: #9ca3af;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .limit-info {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .limit-info-title {
+            color: #ef4444;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .limit-info-text {
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .upgrade-features {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .upgrade-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #d1d5db;
+        }
+
+        .feature-icon {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .upgrade-cta {
+            background: linear-gradient(45deg, #f59e0b, #ec4899);
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.3);
+        }
+
+        .upgrade-later {
+            background: transparent;
+            border: 1px solid #4b5563;
+            color: #9ca3af;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-later:hover {
+            border-color: #6b7280;
+            color: #d1d5db;
+        }
+
+        .usage-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 8px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .usage-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .usage-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #374151;
+        }
+
+        .usage-dot.used {
+            background: #f59e0b;
+        }
+
         @media (max-width: 640px) {
             .container {
                 padding: 16px;
@@ -317,6 +530,7 @@
                 <button type="submit" class="generate-btn" id="generateCaptionsBtn">
                     <span class="loading-spinner" id="captionsSpinner"></span>
                     Generate Caption
+                    <span class="usage-indicator" id="captionUsage"></span>
                 </button>
             </form>
 
@@ -354,6 +568,7 @@
                 <button type="submit" class="generate-btn" id="generateReelBtn">
                     <span class="loading-spinner" id="reelSpinner"></span>
                     Generate Reel Ideas
+                    <span class="usage-indicator" id="reelUsage"></span>
                 </button>
             </form>
 
@@ -372,6 +587,56 @@
 
         <div class="footer-branding">
             🔹 Powered by DealSynth — Elite AI Tools for Digital Hustlers • © 2025
+        </div>
+
+        <!-- Premium Upgrade Modal -->
+        <div id="upgradeModal" class="upgrade-modal">
+            <div class="upgrade-content">
+                <button class="upgrade-close" id="closeUpgrade">×</button>
+                
+                <div class="upgrade-icon">⚡</div>
+                
+                <h2 class="upgrade-title">Upgrade to DealSynth Pro</h2>
+                <p class="upgrade-subtitle">Unleash unlimited AI power for your content</p>
+                
+                <div class="limit-info" id="limitInfo">
+                    <div class="limit-info-title">
+                        🚫 Daily Limit Reached
+                    </div>
+                    <div class="limit-info-text" id="limitInfoText"></div>
+                </div>
+                
+                <div class="upgrade-features">
+                    <div class="upgrade-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Unlimited Caption & Reel Ideas</span>
+                    </div>
+                    <div class="upgrade-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Advanced AI Models & Styles</span>
+                    </div>
+                    <div class="upgrade-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Priority Generation Speed</span>
+                    </div>
+                    <div class="upgrade-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Export to PDF & Templates</span>
+                    </div>
+                    <div class="upgrade-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>24/7 Premium Support</span>
+                    </div>
+                </div>
+                
+                <button class="upgrade-cta" id="upgradeCta">
+                    🚀 Upgrade to Pro - $9.99/month
+                </button>
+                
+                <button class="upgrade-later" id="upgradeLater">
+                    Maybe Later
+                </button>
+            </div>
         </div>
     </div>
 
@@ -435,22 +700,66 @@
         }
 
         function showLimitReachedAlert(type) {
+            const modal = document.getElementById('upgradeModal');
+            const limitInfoText = document.getElementById('limitInfoText');
             const typeText = type === 'captions' ? 'Caption' : 'Reel Idea';
-            alert(`You've reached today's free limit for ${typeText} generation. Upgrade to Pro for unlimited access.`);
+            const limit = DAILY_LIMITS[type];
+            
+            limitInfoText.textContent = `You've used all ${limit} free ${typeText} generations for today. Upgrade to Pro for unlimited access and premium features.`;
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        function hideUpgradeModal() {
+            const modal = document.getElementById('upgradeModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateUsageIndicator(buttonId, type) {
+            const indicator = document.querySelector(`#${buttonId} .usage-indicator`);
+            const used = getUsageData()[type];
+            const total = DAILY_LIMITS[type];
+            const remaining = total - used;
+            
+            const dots = Array.from({length: total}, (_, i) => 
+                `<div class="usage-dot ${i < used ? 'used' : ''}"></div>`
+            ).join('');
+            
+            indicator.innerHTML = `
+                <span>${remaining}/${total} left</span>
+                <div class="usage-dots">${dots}</div>
+            `;
         }
 
         function updateButtonState(buttonId, type) {
             const button = document.getElementById(buttonId);
             const remaining = getRemainingUses(type);
             
+            // Update usage indicator
+            updateUsageIndicator(buttonId, type);
+            
             if (hasReachedLimit(type)) {
                 button.disabled = true;
-                button.style.opacity = '0.5';
-                button.style.cursor = 'not-allowed';
+                button.classList.add('limit-reached');
+                
+                // Add limit badge if not exists
+                if (!button.querySelector('.limit-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'limit-badge';
+                    badge.textContent = '0 left';
+                    button.appendChild(badge);
+                }
             } else {
                 button.disabled = false;
-                button.style.opacity = '1';
-                button.style.cursor = 'pointer';
+                button.classList.remove('limit-reached');
+                
+                // Remove limit badge if exists
+                const badge = button.querySelector('.limit-badge');
+                if (badge) {
+                    badge.remove();
+                }
             }
         }
 
@@ -658,6 +967,31 @@
 
         setupCopyButton('copyCaptionBtn', 'captionsContent');
         setupCopyButton('copyReelBtn', 'reelContent');
+
+        // Modal event listeners
+        document.getElementById('closeUpgrade').addEventListener('click', hideUpgradeModal);
+        document.getElementById('upgradeLater').addEventListener('click', hideUpgradeModal);
+        document.getElementById('upgradeCta').addEventListener('click', () => {
+            // Replace with your actual upgrade URL
+            window.open('https://dealsynth.com/upgrade', '_blank');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('upgradeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'upgradeModal') {
+                hideUpgradeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideUpgradeModal();
+            }
+        });
+
+        // Initialize usage limits on page load
+        initializeUsageLimits();
     </script>
 </body>
 </html>
