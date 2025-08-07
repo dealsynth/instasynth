@@ -64,6 +64,37 @@
             font-size: 16px;
         }
 
+        /* Developer Mode Indicator */
+        .dev-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(45deg, #10b981, #06b6d4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            animation: devPulse 2s infinite;
+        }
+
+        .dev-indicator.show {
+            display: block;
+        }
+
+        @keyframes devPulse {
+            0%, 100% { 
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            50% { 
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
+            }
+        }
+
         .tabs {
             display: flex;
             margin-bottom: 30px;
@@ -174,6 +205,16 @@
         .generate-btn.limit-reached:hover {
             transform: none;
             box-shadow: none;
+        }
+
+        .generate-btn.dev-mode {
+            background: linear-gradient(45deg, #10b981, #06b6d4) !important;
+            border: 2px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .generate-btn.dev-mode:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
         }
 
         .limit-badge {
@@ -474,6 +515,10 @@
             color: #9ca3af;
         }
 
+        .usage-indicator.dev-mode {
+            color: #10b981 !important;
+        }
+
         .usage-dots {
             display: flex;
             gap: 2px;
@@ -488,6 +533,10 @@
 
         .usage-dot.used {
             background: #f59e0b;
+        }
+
+        .usage-dot.dev-mode {
+            background: #10b981 !important;
         }
 
         /* Premium Alert Banner Styles */
@@ -672,10 +721,22 @@
                 font-size: 9px;
                 padding: 3px 6px;
             }
+
+            .dev-indicator {
+                right: 5px;
+                top: 5px;
+                font-size: 10px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Developer Mode Indicator -->
+    <div id="devIndicator" class="dev-indicator">
+        🔧 DEV MODE ACTIVE
+    </div>
+
     <div class="container">
         <header class="header">
             <div class="logo">
@@ -842,452 +903,116 @@
     </div>
 
     <script>
-        // Usage Limit System - KEPT YOUR ORIGINAL LOGIC
-        const DAILY_LIMITS = {
-            captions: 3,
-            reelIdeas: 2
-        };
-
-        function getTodayKey() {
-            return new Date().toDateString();
-        }
-
-        function getUsageData() {
-            try {
-                if (typeof(Storage) === "undefined") {
-                    if (!window.instaSynthUsage) {
-                        window.instaSynthUsage = {
-                            date: getTodayKey(),
-                            captions: 0,
-                            reelIdeas: 0
-                        };
-                    }
-                    return window.instaSynthUsage;
-                }
+        // ===========================================
+        // DEVELOPER MODE BYPASS SYSTEM
+        // ===========================================
+        
+        let isDevModeActive = false;
+        
+        // Main developer command - SECURE AND HIDDEN
+        window.devpower20 = function(enable = true) {
+            if (enable === true || enable === undefined) {
+                // ENABLE DEV MODE
+                isDevModeActive = true;
+                document.getElementById('devIndicator').classList.add('show');
                 
-                const data = JSON.parse(localStorage.getItem('instasynthUsage') || '{}');
-                const today = getTodayKey();
-                
-                if (data.date !== today) {
-                    return {
-                        date: today,
-                        captions: 0,
-                        reelIdeas: 0
-                    };
-                }
-                return data;
-            } catch (e) {
-                return {
-                    date: getTodayKey(),
-                    captions: 0,
-                    reelIdeas: 0
-                };
-            }
-        }
-
-        function saveUsageData(data) {
-            try {
-                if (typeof(Storage) === "undefined") {
-                    window.instaSynthUsage = data;
-                    return;
-                }
-                localStorage.setItem('instasynthUsage', JSON.stringify(data));
-            } catch (e) {
-                console.warn('Could not save usage data to localStorage');
-                window.instaSynthUsage = data;
-            }
-        }
-
-        function incrementUsageCount(type) {
-            const data = getUsageData();
-            data[type]++;
-            saveUsageData(data);
-            return data[type];
-        }
-
-        function getRemainingUses(type) {
-            const data = getUsageData();
-            return Math.max(0, DAILY_LIMITS[type] - data[type]);
-        }
-
-        function hasReachedLimit(type) {
-            return getRemainingUses(type) === 0;
-        }
-
-        function showAlertBanner(options) {
-            const banner = document.getElementById('alertBanner');
-            const icon = document.getElementById('bannerIcon');
-            const title = document.getElementById('bannerTitle');
-            const message = document.getElementById('bannerMessage');
-            const switchButton = document.getElementById('bannerNewChat');
-            
-            // Set icon and styling based on type
-            banner.className = `alert-banner ${options.type || 'error'}`;
-            icon.className = `alert-banner-icon ${options.type || 'error'}`;
-            
-            switch(options.type) {
-                case 'success':
-                    icon.textContent = '✓';
-                    break;
-                case 'warning':
-                    icon.textContent = '⚠';
-                    break;
-                default:
-                    icon.textContent = '!';
-            }
-            
-            title.textContent = options.title;
-            message.textContent = options.message;
-            
-            switchButton.textContent = options.buttonText || 'Try Tomorrow';
-            switchButton.setAttribute('data-switch-to', options.switchTo || '');
-            
-            banner.classList.add('show');
-            
-            if (!options.persistent) {
-                setTimeout(() => {
-                    hideAlertBanner();
-                }, 8000);
-            }
-        }
-
-        function hideAlertBanner() {
-            const banner = document.getElementById('alertBanner');
-            banner.classList.remove('show');
-        }
-
-        function checkAndShowLimitBanner() {
-            const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
-            const currentFeature = activeTab === 'captions' ? 'captions' : 'reelIdeas';
-            const otherFeature = currentFeature === 'captions' ? 'reelIdeas' : 'captions';
-            
-            const currentReached = hasReachedLimit(currentFeature);
-            const otherReached = hasReachedLimit(otherFeature);
-            
-            if (currentReached && otherReached) {
-                showAlertBanner({
-                    type: 'error',
-                    title: `You've hit the free plan limit for all features.`,
-                    message: `You need to upgrade to continue generating content because there's high demand. Your limit resets tomorrow after 12:00 AM.`,
-                    buttonText: 'Try Tomorrow',
-                    persistent: true
+                // Update all buttons to show dev mode styling
+                document.querySelectorAll('.generate-btn').forEach(btn => {
+                    btn.classList.add('dev-mode');
                 });
-            } else if (currentReached && !otherReached) {
-                const currentFeatureName = currentFeature === 'captions' ? 'Captions' : 'Reel Ideas';
-                const otherFeatureName = otherFeature === 'captions' ? 'Captions' : 'Reel Ideas';
-                const remaining = getRemainingUses(otherFeature);
                 
-                showAlertBanner({
-                    type: 'error',
-                    title: `You've hit the free plan limit for ${currentFeatureName}.`,
-                    message: `You need to upgrade to continue generating ${currentFeatureName.toLowerCase()} because there's high demand. You still have ${remaining} ${otherFeatureName.toLowerCase()} left today.`,
-                    buttonText: `Try ${otherFeatureName}`,
-                    switchTo: otherFeature === 'captions' ? 'captions' : 'reel-ideas',
-                    persistent: true
+                // Update usage indicators
+                document.querySelectorAll('.usage-indicator').forEach(indicator => {
+                    indicator.classList.add('dev-mode');
                 });
-            } else {
+                
+                // Hide any visible banners
                 hideAlertBanner();
-            }
-        }
-
-        function updateUsageIndicator(buttonId, type) {
-            const indicator = document.querySelector(`#${buttonId} .usage-indicator`);
-            const used = getUsageData()[type];
-            const total = DAILY_LIMITS[type];
-            const remaining = total - used;
-            
-            const dots = Array.from({length: total}, (_, i) => 
-                `<div class="usage-dot ${i < used ? 'used' : ''}"></div>`
-            ).join('');
-            
-            indicator.innerHTML = `
-                <span>${remaining}/${total} left</span>
-                <div class="usage-dots">${dots}</div>
-            `;
-        }
-
-        function updateButtonState(buttonId, type) {
-            const button = document.getElementById(buttonId);
-            const remaining = getRemainingUses(type);
-            
-            updateUsageIndicator(buttonId, type);
-            
-            if (hasReachedLimit(type)) {
-                button.disabled = true;
-                button.classList.add('limit-reached');
                 
-                if (!button.querySelector('.limit-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'limit-badge';
-                    badge.textContent = '0 left';
-                    button.appendChild(badge);
-                }
-            } else {
-                button.disabled = false;
-                button.classList.remove('limit-reached');
-                
-                const badge = button.querySelector('.limit-badge');
-                if (badge) {
-                    badge.remove();
-                }
-            }
-        }
-
-        function initializeUsageLimits() {
-            updateButtonState('generateCaptionsBtn', 'captions');
-            updateButtonState('generateReelBtn', 'reelIdeas');
-        }
-
-        // Tab switching functionality - FIXED
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-                
-                document.querySelectorAll('.output-section').forEach(output => output.classList.remove('show'));
-                
+                // Update button states
                 updateButtonState('generateCaptionsBtn', 'captions');
                 updateButtonState('generateReelBtn', 'reelIdeas');
                 
+                console.log('🔧 DEV MODE ACTIVATED - Unlimited usage enabled!');
+                console.log('💡 Use devpower20(false) to disable dev mode');
+                console.log('🔄 Use devReset() to reset usage counters');
+                
+                return 'Dev mode activated! Unlimited testing enabled.';
+            } else if (enable === false) {
+                // DISABLE DEV MODE
+                isDevModeActive = false;
+                document.getElementById('devIndicator').classList.remove('show');
+                
+                // Remove dev mode styling from buttons
+                document.querySelectorAll('.generate-btn').forEach(btn => {
+                    btn.classList.remove('dev-mode');
+                });
+                
+                // Remove dev mode styling from usage indicators
+                document.querySelectorAll('.usage-indicator').forEach(indicator => {
+                    indicator.classList.remove('dev-mode');
+                });
+                
+                // Restore normal button states
+                updateButtonState('generateCaptionsBtn', 'captions');
+                updateButtonState('generateReelBtn', 'reelIdeas');
+                
+                // Check if banners should show
                 checkAndShowLimitBanner();
-            });
-        });
-
-        // FIXED: Mock AI generation functions with better content
-        function generateCaptions(niche, tone, goal) {
-            const captions = {
-                funny: [
-                    `POV: You're trying to ${goal.toLowerCase()} but your ${niche} game is too strong 😂\n\n#${niche} #funny #relatable`,
-                    `Me: I'll just post one ${niche} pic\nAlso me: *posts entire photo dump*\n\nWho else is guilty? 🙋‍♀️\n\n#${niche}life #guilty #authentic`,
-                    `When someone asks about my ${niche} obsession:\n"It's not a phase, mom!" 💁‍♀️\n\nTag someone who gets it!\n\n#${niche}addict #notaphase #lifestyle`
-                ],
-                luxury: [
-                    `Elevated ${niche} experiences that speak to the soul ✨\n\nCurating moments of pure sophistication to ${goal.toLowerCase()}.\n\n#luxury${niche} #sophisticated #exclusive`,
-                    `Where ${niche} meets artistry. Every detail crafted with intention.\n\nExperience the difference that ${goal.toLowerCase()} brings.\n\n#premium #craftsmanship #luxury`,
-                    `Indulge in the finest ${niche} experience. Because you deserve nothing less than extraordinary.\n\n#luxurylifestyle #premium${niche} #exclusive`
-                ],
-                motivational: [
-                    `Your ${niche} journey is unique, and that's your superpower! 💪\n\nEvery step forward, no matter how small, is progress toward your goal to ${goal.toLowerCase()}.\n\n#motivation #${niche}journey #progress`,
-                    `Champions aren't made overnight, but they're made every day through consistent ${niche} dedication.\n\nWhat will you do today to ${goal.toLowerCase()}?\n\n#consistency #motivation #${niche}`,
-                    `The only person you need to be better than is who you were yesterday in your ${niche} journey.\n\nKeep pushing to ${goal.toLowerCase()}! 🚀\n\n#growth #motivation #selflove`
-                ]
-            };
-            
-            const toneList = captions[tone] || captions.motivational;
-            return toneList[Math.floor(Math.random() * toneList.length)];
-        }
-
-        // FIXED: Reel Ideas generation with proper detailed content
-        function generateReelIdeas(niche, tone, goal) {
-            const reelIdeas = {
-                funny: [
-                    `🎬 REEL IDEA: "${niche.toUpperCase()} EXPECTATIONS VS REALITY"\n\nScene 1: What you think ${niche} looks like (perfect setup)\nScene 2: What it actually looks like (chaos & mess)\nScene 3: You doing it anyway because you love it\n\nGoal: ${goal}\nMusic: Trending comedy audio\nHashtags: #${niche} #expectationsvsreality #relatable #funny\n\nEngagement hook: "Who else can relate? 😅"`,
-                    `🎬 REEL IDEA: "THINGS NOBODY TELLS YOU ABOUT ${niche.toUpperCase()}"\n\nQuick cuts showing:\n• The hidden struggles\n• Funny behind-the-scenes moments\n• Real vs Instagram reality\n• Why you still love it anyway\n\nGoal: ${goal}\nMusic: Popular trending sound\nHashtags: #${niche}truths #reality #honest #relatable\n\nCTA: "What would you add to this list?"`,
-                    `🎬 REEL IDEA: "POV: YOU'RE ADDICTED TO ${niche.toUpperCase()}"\n\nShow relatable scenarios:\n• Checking ${niche} content at 3am\n• Buying more ${niche} stuff you don't need\n• Friends rolling their eyes at your obsession\n• You having no regrets whatsoever\n\nGoal: ${goal}\nMusic: Trending "addicted" audio\nHashtags: #${niche}addict #pov #obsessed #sorrynotsorry`
-                ],
-                luxury: [
-                    `🎬 REEL IDEA: "THE ART OF ${niche.toUpperCase()} EXCELLENCE"\n\nCinematic shots showing:\n• Premium materials/ingredients in detail\n• Meticulous attention to every detail\n• The sophisticated craftsmanship process\n• Final luxurious result reveal\n\nGoal: ${goal}\nMusic: Elegant classical or ambient\nHashtags: #luxury${niche} #craftsmanship #premium #sophisticated\n\nMood: Slow, deliberate, aspirational`,
-                    `🎬 REEL IDEA: "ELEVATING YOUR ${niche.toUpperCase()} RITUAL"\n\nSlow-motion luxury experience:\n• Premium setup and preparation\n• Sophisticated techniques and methods\n• Elegant presentation and styling\n• Pure indulgence and enjoyment\n\nGoal: ${goal}\nMusic: Sophisticated instrumental\nHashtags: #elevated #luxuryritual #premium${niche} #selfcare\n\nCaption: "Transform ordinary into extraordinary"`,
-                    `🎬 REEL IDEA: "BEHIND THE SCENES: LUXURY ${niche.toUpperCase()}"\n\nExclusive glimpses of:\n• Premium processes and techniques\n• High-end materials and tools\n• Expert craftsmanship in action\n• Attention to every small detail\n\nGoal: ${goal}\nMusic: Upscale ambient sounds\nHashtags: #behindthescenes #luxury #exclusive #premium\n\nHook: "This is what luxury really looks like..."`
-                ],
-                motivational: [
-                    `🎬 REEL IDEA: "YOUR ${niche.toUpperCase()} TRANSFORMATION JOURNEY"\n\nShow progression timeline:\n• Day 1: Nervous beginner struggles\n• Week 1: Small wins and improvements\n• Month 1: Consistent effort paying off\n• Month 3: Major breakthrough moment\n• Now: Confident and inspiring others\n\nGoal: ${goal}\nMusic: Inspiring/uplifting beat\nHashtags: #transformation #${niche}journey #motivation #progress\n\nMessage: "Progress over perfection"`,
-                    `🎬 REEL IDEA: "5 ${niche.toUpperCase()} HABITS THAT CHANGED MY LIFE"\n\nQuick tips format:\n1. Daily consistency over perfection\n2. Starting before feeling ready\n3. Tracking progress, not results\n4. Finding your deeper WHY\n5. Celebrating small wins daily\n\nGoal: ${goal}\nMusic: Motivational trending audio\nHashtags: #${niche}habits #success #motivation #mindset\n\nCTA: "Which habit will you start today?"`,
-                    `🎬 REEL IDEA: "FROM DOUBT TO CONFIDENCE IN ${niche.toUpperCase()}"\n\nEmotional story arc:\n• Initial fears and self-doubt\n• Taking the scary first step\n• Pushing through obstacles\n• Building momentum and confidence\n• Inspiring others to start their journey\n\nGoal: ${goal}\nMusic: Inspirational build-up track\nHashtags: #confidence #${niche} #motivation #believeinyourself\n\nHook: "6 months ago I never thought I could..."`
-                ]
-            };
-            
-            const toneList = reelIdeas[tone] || reelIdeas.motivational;
-            return toneList[Math.floor(Math.random() * toneList.length)];
-        }
-
-        // FIXED: Form submissions - kept your original working logic
-        document.getElementById('captionsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (hasReachedLimit('captions')) {
-                checkAndShowLimitBanner();
-                return;
+                
+                console.log('🔒 DEV MODE DEACTIVATED - Normal limits restored');
+                
+                return 'Dev mode deactivated! Normal user limits restored.';
             }
+        };
+
+        // Additional dev command to reset usage counters
+        window.devReset = function() {
+            const resetData = {
+                date: getTodayKey(),
+                captions: 0,
+                reelIdeas: 0
+            };
+            saveUsageData(resetData);
             
-            const niche = document.getElementById('captionNiche').value.trim();
-            const tone = document.getElementById('captionTone').value;
-            const goal = document.getElementById('captionGoal').value.trim();
-            
-            if (!niche || !tone || !goal) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            const btn = document.getElementById('generateCaptionsBtn');
-            const spinner = document.getElementById('captionsSpinner');
-            const output = document.getElementById('captionsOutput');
-            const content = document.getElementById('captionsContent');
-            
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-            output.classList.remove('show');
-            
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const caption = generateCaptions(niche, tone, goal);
-            content.textContent = caption;
-            output.classList.add('show');
-            
-            incrementUsageCount('captions');
-            
-            btn.disabled = false;
-            spinner.style.display = 'none';
+            // Update button states
             updateButtonState('generateCaptionsBtn', 'captions');
-            
-            // Check if limit reached AFTER generation
-            if (hasReachedLimit('captions')) {
-                checkAndShowLimitBanner();
-            }
-        });
-
-        document.getElementById('reelIdeasForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (hasReachedLimit('reelIdeas')) {
-                checkAndShowLimitBanner();
-                return;
-            }
-            
-            const niche = document.getElementById('reelNiche').value.trim();
-            const tone = document.getElementById('reelTone').value;
-            const goal = document.getElementById('reelGoal').value.trim();
-            
-            if (!niche || !tone || !goal) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            const btn = document.getElementById('generateReelBtn');
-            const spinner = document.getElementById('reelSpinner');
-            const output = document.getElementById('reelOutput');
-            const content = document.getElementById('reelContent');
-            
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-            output.classList.remove('show');
-            
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const reelIdea = generateReelIdeas(niche, tone, goal);
-            content.textContent = reelIdea;
-            output.classList.add('show');
-            
-            incrementUsageCount('reelIdeas');
-            
-            btn.disabled = false;
-            spinner.style.display = 'none';
             updateButtonState('generateReelBtn', 'reelIdeas');
             
-            // Check if limit reached AFTER generation
-            if (hasReachedLimit('reelIdeas')) {
-                checkAndShowLimitBanner();
-            }
-        });
+            // Hide banners
+            hideAlertBanner();
+            
+            console.log('🔄 Usage counters reset to 0/0');
+            console.log('📊 Current usage:', getUsageData());
+            
+            return 'Usage counters reset! Fresh start for testing.';
+        };
 
-        // FIXED: Copy to clipboard functionality - simple and working
-        function setupCopyButton(buttonId, contentId) {
-            document.getElementById(buttonId).addEventListener('click', async () => {
-                const content = document.getElementById(contentId).textContent;
-                const btn = document.getElementById(buttonId);
-                
-                if (!content.trim()) {
-                    alert('No content to copy!');
-                    return;
-                }
-                
-                try {
-                    await navigator.clipboard.writeText(content);
-                    btn.textContent = 'Copied!';
-                    btn.classList.add('copied');
-                    
-                    setTimeout(() => {
-                        btn.textContent = 'Copy';
-                        btn.classList.remove('copied');
-                    }, 2000);
-                } catch (err) {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = content;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    try {
-                        document.execCommand('copy');
-                        btn.textContent = 'Copied!';
-                        btn.classList.add('copied');
-                        setTimeout(() => {
-                            btn.textContent = 'Copy';
-                            btn.classList.remove('copied');
-                        }, 2000);
-                    } catch (fallbackErr) {
-                        console.error('Fallback copy failed: ', fallbackErr);
-                        alert('Copy failed. Please manually select and copy the text.');
-                    }
-                    document.body.removeChild(textArea);
-                }
-            });
-        }
-
-        setupCopyButton('copyCaptionBtn', 'captionsContent');
-        setupCopyButton('copyReelBtn', 'reelContent');
-
-        // Modal event listeners
-        document.getElementById('closeUpgrade').addEventListener('click', () => {
-            document.getElementById('upgradeModal').classList.remove('show');
-        });
-        
-        document.getElementById('upgradeLater').addEventListener('click', () => {
-            document.getElementById('upgradeModal').classList.remove('show');
-        });
-        
-        document.getElementById('upgradeCta').addEventListener('click', () => {
-            window.open('https://dealsynth.blogspot.com/', '_blank');
-        });
-
-        // Alert banner event listeners
-        document.getElementById('bannerClose').addEventListener('click', hideAlertBanner);
-        
-        document.getElementById('bannerNewChat').addEventListener('click', (e) => {
-            const switchTo = e.target.getAttribute('data-switch-to');
-            if (switchTo) {
-                const targetTab = document.querySelector(`[data-tab="${switchTo}"]`);
-                if (targetTab) {
-                    targetTab.click();
-                }
+        // Dev command to check current status
+        window.devStatus = function() {
+            const usage = getUsageData();
+            const status = {
+                devModeActive: isDevModeActive,
+                date: usage.date,
+                captionsUsed: usage.captions,
+                captionsRemaining: getRemainingUses('captions'),
+                reelIdeasUsed: usage.reelIdeas,
+                reelIdeasRemaining: getRemainingUses('reelIdeas'),
+                limits: DAILY_LIMITS
+            };
+            
+            console.table(status);
+            
+            if (isDevModeActive) {
+                console.log('🔧 Dev mode is ACTIVE - unlimited usage');
             } else {
-                hideAlertBanner();
+                console.log('🔒 Dev mode is INACTIVE - normal limits apply');
             }
-        });
-        
-        document.getElementById('bannerUpgrade').addEventListener('click', () => {
-            window.open('https://dealsynth.blogspot.com/', '_blank');
-        });
+            
+            return status;
+        };
 
-        // Close modal when clicking outside
-        document.getElementById('upgradeModal').addEventListener('click', (e) => {
-            if (e.target.id === 'upgradeModal') {
-                document.getElementById('upgradeModal').classList.remove('show');
+        // ===========================================
+        // ORIGINAL USAGE LIMIT SYSTEM (MODIFIED)
+        // ===========================================
             }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.getElementById('upgradeModal').classList.remove('show');
-            }
-        });
-
-        // Initialize usage limits on page load
-        initializeUsageLimits();
-    </script>
-</body>
-</html>
