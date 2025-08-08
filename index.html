@@ -192,6 +192,22 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
+        .dev-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            z-index: 10;
+            border: 2px solid #111827;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
         .loading-spinner {
             display: none;
             width: 20px;
@@ -624,6 +640,29 @@
             color: #9ca3af;
         }
 
+        /* Developer Mode Indicator */
+        .dev-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 3000;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .dev-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Mobile responsiveness for banner */
         @media (max-width: 768px) {
             .alert-banner {
@@ -666,7 +705,7 @@
                 font-size: 16px;
             }
 
-            .limit-badge {
+            .limit-badge, .dev-badge {
                 right: -4px;
                 top: -4px;
                 font-size: 9px;
@@ -839,9 +878,73 @@
                 <button class="alert-banner-close" id="bannerClose">×</button>
             </div>
         </div>
+
+        <!-- Developer Mode Indicator -->
+        <div id="devIndicator" class="dev-indicator">
+            🛠️ DEV MODE
+        </div>
     </div>
 
     <script>
+        // DEVELOPER BYPASS SYSTEM - Added for testing
+        let developerMode = false;
+
+        // Create developer bypass functions for console use
+        window.enableDevMode = function() {
+            developerMode = true;
+            console.log('🛠️ Developer Mode ENABLED - Unlimited generations activated!');
+            
+            // Update UI to show dev mode
+            document.getElementById('devIndicator').classList.add('show');
+            updateButtonState('generateCaptionsBtn', 'captions');
+            updateButtonState('generateReelBtn', 'reelIdeas');
+            hideAlertBanner();
+            
+            // Show success notification
+            showDevModeNotification('Developer Mode Enabled! 🚀', 'You now have unlimited generations for testing.', 'success');
+            
+            return 'Usage limits reset successfully!';
+        };
+
+        window.getUsageStats = function() {
+            const data = getUsageData();
+            const stats = {
+                date: data.date,
+                captions: {
+                    used: data.captions,
+                    limit: DAILY_LIMITS.captions,
+                    remaining: getRemainingUses('captions')
+                },
+                reelIdeas: {
+                    used: data.reelIdeas,
+                    limit: DAILY_LIMITS.reelIdeas,
+                    remaining: getRemainingUses('reelIdeas')
+                },
+                developerMode: developerMode
+            };
+            
+            console.table(stats);
+            return stats;
+        };
+
+        // Show developer commands on load
+        console.log('%c🛠️ DEVELOPER COMMANDS AVAILABLE:', 'color: #10b981; font-weight: bold; font-size: 16px;');
+        console.log('%cenabledDevMode()     - Enable unlimited generations', 'color: #f59e0b;');
+        console.log('%cdisableDevMode()     - Disable developer mode', 'color: #f59e0b;');
+        console.log('%cresetLimits()       - Reset all usage counters', 'color: #f59e0b;');
+        console.log('%cgetUsageStats()     - View current usage statistics', 'color: #f59e0b;');
+        console.log('%c                                                    ', 'color: #6b7280;');
+
+        function showDevModeNotification(title, message, type = 'success') {
+            showAlertBanner({
+                type: type,
+                title: title,
+                message: message,
+                buttonText: 'Got it',
+                persistent: false
+            });
+        }
+
         // Usage Limit System - KEPT YOUR ORIGINAL LOGIC
         const DAILY_LIMITS = {
             captions: 3,
@@ -899,6 +1002,12 @@
         }
 
         function incrementUsageCount(type) {
+            // Skip incrementing if in developer mode
+            if (developerMode) {
+                console.log(`🛠️ Dev mode: Skipping usage increment for ${type}`);
+                return 0;
+            }
+            
             const data = getUsageData();
             data[type]++;
             saveUsageData(data);
@@ -906,11 +1015,21 @@
         }
 
         function getRemainingUses(type) {
+            // Return unlimited if in developer mode
+            if (developerMode) {
+                return 999;
+            }
+            
             const data = getUsageData();
             return Math.max(0, DAILY_LIMITS[type] - data[type]);
         }
 
         function hasReachedLimit(type) {
+            // Never reached limit in developer mode
+            if (developerMode) {
+                return false;
+            }
+            
             return getRemainingUses(type) === 0;
         }
 
@@ -957,6 +1076,12 @@
         }
 
         function checkAndShowLimitBanner() {
+            // Don't show limit banners in developer mode
+            if (developerMode) {
+                hideAlertBanner();
+                return;
+            }
+            
             const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
             const currentFeature = activeTab === 'captions' ? 'captions' : 'reelIdeas';
             const otherFeature = currentFeature === 'captions' ? 'reelIdeas' : 'captions';
@@ -992,6 +1117,19 @@
 
         function updateUsageIndicator(buttonId, type) {
             const indicator = document.querySelector(`#${buttonId} .usage-indicator`);
+            
+            if (developerMode) {
+                indicator.innerHTML = `
+                    <span>∞ DEV</span>
+                    <div class="usage-dots">
+                        <div class="usage-dot" style="background: #10b981;"></div>
+                        <div class="usage-dot" style="background: #10b981;"></div>
+                        <div class="usage-dot" style="background: #10b981;"></div>
+                    </div>
+                `;
+                return;
+            }
+            
             const used = getUsageData()[type];
             const total = DAILY_LIMITS[type];
             const remaining = total - used;
@@ -1011,6 +1149,28 @@
             const remaining = getRemainingUses(type);
             
             updateUsageIndicator(buttonId, type);
+            
+            if (developerMode) {
+                button.disabled = false;
+                button.classList.remove('limit-reached');
+                
+                // Remove any existing badges
+                const existingBadge = button.querySelector('.limit-badge');
+                if (existingBadge) existingBadge.remove();
+                
+                // Add dev badge if not exists
+                if (!button.querySelector('.dev-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'dev-badge';
+                    badge.textContent = 'DEV';
+                    button.appendChild(badge);
+                }
+                return;
+            }
+            
+            // Remove dev badge in normal mode
+            const devBadge = button.querySelector('.dev-badge');
+            if (devBadge) devBadge.remove();
             
             if (hasReachedLimit(type)) {
                 button.disabled = true;
@@ -1106,7 +1266,7 @@
             return toneList[Math.floor(Math.random() * toneList.length)];
         }
 
-        // FIXED: Form submissions - kept your original working logic
+        // FIXED: Form submissions - kept your original working logic with dev bypass
         document.getElementById('captionsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1145,8 +1305,8 @@
             spinner.style.display = 'none';
             updateButtonState('generateCaptionsBtn', 'captions');
             
-            // Check if limit reached AFTER generation
-            if (hasReachedLimit('captions')) {
+            // Check if limit reached AFTER generation (only in normal mode)
+            if (!developerMode && hasReachedLimit('captions')) {
                 checkAndShowLimitBanner();
             }
         });
@@ -1189,8 +1349,8 @@
             spinner.style.display = 'none';
             updateButtonState('generateReelBtn', 'reelIdeas');
             
-            // Check if limit reached AFTER generation
-            if (hasReachedLimit('reelIdeas')) {
+            // Check if limit reached AFTER generation (only in normal mode)
+            if (!developerMode && hasReachedLimit('reelIdeas')) {
                 checkAndShowLimitBanner();
             }
         });
@@ -1290,4 +1450,37 @@
         initializeUsageLimits();
     </script>
 </body>
-</html>
+</html>'Developer mode activated successfully!';
+        };
+
+        window.disableDevMode = function() {
+            developerMode = false;
+            console.log('🔒 Developer Mode DISABLED - Normal limits restored');
+            
+            // Update UI to hide dev mode
+            document.getElementById('devIndicator').classList.remove('show');
+            updateButtonState('generateCaptionsBtn', 'captions');
+            updateButtonState('generateReelBtn', 'reelIdeas');
+            checkAndShowLimitBanner();
+            
+            // Show info notification
+            showDevModeNotification('Developer Mode Disabled', 'Normal usage limits have been restored.', 'warning');
+            
+            return 'Developer mode deactivated successfully!';
+        };
+
+        window.resetLimits = function() {
+            const data = {
+                date: getTodayKey(),
+                captions: 0,
+                reelIdeas: 0
+            };
+            saveUsageData(data);
+            updateButtonState('generateCaptionsBtn', 'captions');
+            updateButtonState('generateReelBtn', 'reelIdeas');
+            hideAlertBanner();
+            
+            console.log('🔄 Usage limits have been reset to 0');
+            showDevModeNotification('Limits Reset! ✅', 'All usage counters have been reset to 0.', 'success');
+            
+            return
